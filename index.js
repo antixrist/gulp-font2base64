@@ -5,11 +5,11 @@ var through = require('through2'),
 
 var template = [
   '@font-face {',
-  '  font-family: "{{fileName}}";',
+  '  font-family: "{{name}}";',
   '  font-style: normal;',
   '  font-weight: 400;',
-  '  src: local("{{fileName}}"),',
-  '       url("data:application/x-font-{{extName}};base64,{{base64}}") format("{{extName}}");',
+  '  src: local("{{name}}"),',
+  '       url("data:application/x-font-{{format}};base64,{{base64}}") format("{{format}}");',
   '}'
 ].join('\n');
 
@@ -32,10 +32,11 @@ module.exports = function() {
     if (file.isBuffer()) {
       var base64   = new Buffer(file.contents).toString('base64');
       var extName  = path.extname(file.path).replace(/^\./, '');
+      var format   = extName.replace(/^\./, '');
       var fileName = path.basename(file.path, extName);
       var output   = template
-        .replace(new RegExp('{{fileName}}', 'g'), fileName)
-        .replace(new RegExp('{{extName}}', 'g'), extName)
+        .replace(new RegExp('{{name}}', 'g'), fileName)
+        .replace(new RegExp('{{format}}', 'g'), format)
         .replace(new RegExp('{{base64}}'), base64);
 
       file.contents = new Buffer(output);
