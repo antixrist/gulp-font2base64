@@ -31,7 +31,7 @@ module.exports = function() {
 
     if (file.isBuffer()) {
       var base64   = new Buffer(file.contents).toString('base64');
-      var extName  = path.extname(file.path).replace(/^\./, '');
+      var extName  = path.extname(file.path);
       var format   = extName.replace(/^\./, '');
       var fileName = path.basename(file.path, extName);
       var output   = template
