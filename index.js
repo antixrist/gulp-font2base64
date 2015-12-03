@@ -13,7 +13,6 @@ var template = [
   '}'
 ].join('\n');
 
-
 module.exports = function() {
 
   // create a stream through which each file will pass
@@ -32,12 +31,12 @@ module.exports = function() {
 
     if (file.isBuffer()) {
       var base64   = new Buffer(file.contents).toString('base64');
-      var extName  = path.extname(file.path);
+      var extName  = path.extname(file.path).replace('^\.', '');
       var fileName = path.basename(file.path, extName);
       var output   = template
-        .replace(new RegExp ('{{fileName}}', 'g'), fileName)
-        .replace(new RegExp ('{{extName}}', 'g'), extName)
-        .replace(new RegExp ('{{base64}}'), base64);
+        .replace(new RegExp('{{fileName}}', 'g'), fileName)
+        .replace(new RegExp('{{extName}}', 'g'), extName)
+        .replace(new RegExp('{{base64}}'), base64);
 
       file.contents = new Buffer(output);
       file.path = gutil.replaceExtension(file.path, '.css');
