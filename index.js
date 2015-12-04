@@ -33,6 +33,8 @@ module.exports = function() {
       var base64   = new Buffer(file.contents).toString('base64');
       var extName  = path.extname(file.path);
       var format   = extName.replace(/^\./, '');
+      format = (format != 'ttf') ? format : 'truetype';
+
       var fileName = path.basename(file.path, extName);
       var output   = template
         .replace(new RegExp('{{name}}', 'g'), fileName)
