@@ -40,7 +40,8 @@ module.exports = function() {
         .replace(new RegExp('{{base64}}'), base64);
 
       file.contents = new Buffer(output);
-      file.path = gutil.replaceExtension(file.path, '.css');
+      //file.path = gutil.replaceExtension(file.path, '.css');
+      file.path = file.path +'.css';
 
       return callback(null, file);
     }
