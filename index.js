@@ -1,19 +1,42 @@
 var through = require('through2'),
+    extend  = require('extend'),
+    _       = require('lodash'),
     gutil   = require('gulp-util'),
     path    = require('path')
 ;
 
-var template = [
-  '@font-face {',
-  '  font-family: "{{name}}";',
-  '  font-style: normal;',
-  '  font-weight: 400;',
-  '  src: local("{{name}}"),',
-  '       url("data:application/x-font-{{format}};base64,{{base64}}") format("{{format}}");',
-  '}'
-].join('\n');
+/**
+ * @typedef {{}} GulpFont2Base64Opts
+ * @property {string} template
+ * @property {Function} map
+ */
 
-module.exports = function() {
+/**
+ * @type {GulpFont2Base64Opts}
+ */
+var defaults = {
+  template: [
+    '@font-face {',
+    '  font-family: "<%= name %>";',
+    '  font-style: normal;',
+    '  font-weight: 400;',
+    '  src: local("<%= name %>"),',
+    '       url("data:<%= mime %>;base64,<%= base64 %>") format("<%= format %>");',
+    '}'
+  ].join('\n'),
+  map: function () {}
+};
+
+/**
+ * @param {GulpFont2Base64Opts} [opts]
+ */
+module.exports = function(opts) {
+  opts = _.isPlainObject(opts) ? opts : {};
+  opts = extend({}, defaults, opts);
+
+  var tpl = _.template(opts.template);
+  var mapper = _.isFunction(opts.map) ? opts.map : function () {};
+
 
   // create a stream through which each file will pass
   return through.obj(function(file, enc, callback) {
@@ -36,11 +59,23 @@ module.exports = function() {
       format = (format != 'ttf') ? format : 'truetype';
 
       var fileName = path.basename(file.path, extName);
-      var output   = template
-        .replace(new RegExp('{{name}}', 'g'), fileName)
-        .replace(new RegExp('{{format}}', 'g'), format)
-        .replace(new RegExp('{{base64}}'), base64);
 
+      var data = {
+        name: fileName,
+        localName: fileName,
+        fontStyle: 'normal',
+        fontWeight: '400',
+        mime: 'application/x-font-'+ format,
+        format: format,
+        base64: base64
+      };
+
+      var tmp = mapper(extend({}, data));
+      if (_.isPlainObject(tmp)) {
+        data = extend(data, tmp);
+      }
+
+      var output = tpl(data);
       file.contents = new Buffer(output);
       //file.path = gutil.replaceExtension(file.path, '.css');
       file.path = file.path +'.css';
